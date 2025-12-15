@@ -68,13 +68,18 @@ async def index(request: Request, session_data: tuple = Depends(get_or_create_se
         "index.html", 
         {"request": request, "products": PRODUCTS, "session": session}
     )
+    
+    # Определяем, идет ли запрос по HTTPS
+    # Nginx отправляет заголовок X-Forwarded-Proto, который мы будем использовать
+    is_secure = request.headers.get("x-forwarded-proto") == "https"
+    
     if is_new:
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=False,      # 1. Разрешает чтение JS
-            samesite="Lax",      # 2. Защита от CSRF
-            secure=False,        # Для HTTP
+            httponly=False,
+            samesite="Lax",
+            secure=is_secure, # <-- ИСПОЛЬЗУЕМ is_secure
             max_age=settings.session_ttl
         )
     return response
@@ -105,16 +110,19 @@ async def apply_bonus(bonus_data: BonusRequest, session: SessionData = Depends(g
     return {"success": True, "balance": session.balance}
 
 @app.get("/api/session")
-async def get_session_info(session_data: tuple = Depends(get_or_create_session)):
+async def get_session_info(request: Request, session_data: tuple = Depends(get_or_create_session)): # <--- request добавлен
     session, is_new = session_data
     response = JSONResponse(content=session.model_dump())
+    
+    is_secure = request.headers.get("x-forwarded-proto") == "https"
+    
     if is_new:
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=False,      # 1. Разрешает чтение JS
-            samesite="Lax",      # 2. Защита от CSRF
-            secure=False,        # Для HTTP
+            httponly=False,
+            samesite="Lax",
+            secure=is_secure, # <-- ИСПОЛЬЗУЕМ is_secure
             max_age=settings.session_ttl
         )
     return response
