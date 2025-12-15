@@ -72,9 +72,9 @@ async def index(request: Request, session_data: tuple = Depends(get_or_create_se
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=True,        
-            samesite="Lax",       
-            secure=False,         
+            httponly=False,     
+            samesite="Lax",
+            secure=False,
             max_age=settings.session_ttl
         )
     return response
@@ -84,12 +84,19 @@ async def apply_bonus(bonus_data: BonusRequest, session: SessionData = Depends(g
     if session.bonus_received:
         logger.warning(f"Bonus already applied for session {session.session_id}")
         raise HTTPException(status_code=400, detail="Bonus already applied")
-    if len(bonus_data.bonus_amount) > 3:
-        logger.warning(f"Invalid bonus amount: {bonus_data.bonus_amount}")
+    
+    try:
+        bonus_value = float(bonus_data.bonus_amount)
+        if not (1 <= bonus_value <= 999):
+            raise HTTPException(status_code=400, detail="Bonus amount must be between 1 and 999")
+    except ValueError:
         raise HTTPException(status_code=400, detail="Invalid bonus amount")
-    session.balance += float(bonus_data.bonus_amount)
+    
+    session.balance += bonus_value
     session.bonus_received = True
     update_session(session)
+    
+    logger.info(f"Bonus applied: {bonus_value} for session {session.session_id}")
     return {"success": True, "balance": session.balance}
 
 @app.get("/api/session")
@@ -100,9 +107,9 @@ async def get_session_info(session_data: tuple = Depends(get_or_create_session))
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=True,        
-            samesite="Lax",       
-            secure=False,         
+            httponly=False,      
+            samesite="Lax",
+            secure=False,
             max_age=settings.session_ttl
         )
     return response
@@ -144,13 +151,7 @@ async def logout(response: Response, session_id: Optional[str] = Cookie(None)):
     if session_id and redis_client.exists(f"session:{session_id}"):
         redis_client.delete(f"session:{session_id}")
         logger.info(f"Session {session_id} deleted")
-    # Удаляем cookie с теми же параметрами, что и при создании
-    response.delete_cookie(
-        key="session_id",
-        httponly=True,
-        samesite="Lax",
-        secure=False
-    )
+    response.delete_cookie(key="session_id")
     return JSONResponse(content={"success": True})
 
 @app.get("/api/products")
