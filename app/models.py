@@ -13,6 +13,7 @@ class SessionData(BaseModel):
     bonus_received: bool = False
 
 class BonusRequest(BaseModel):
+    # Принимаем строку, валидация происходит в main.py
     bonus_amount: str
 
 PRODUCTS = [

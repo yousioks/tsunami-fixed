@@ -87,7 +87,11 @@ async def apply_bonus(bonus_data: BonusRequest, session: SessionData = Depends(g
     
     # 3. Исправленная проверка бонуса
     try:
-        bonus_value = float(bonus_data.bonus_amount)
+        # Pydantic модель ожидает str, JS отправляет число/строку.
+        # На всякий случай чистим ввод и преобразуем.
+        amount_str = str(bonus_data.bonus_amount).strip()
+        bonus_value = float(amount_str)
+        
         if not (1 <= bonus_value <= 999):
             raise HTTPException(status_code=400, detail="Bonus amount must be between 1 and 999")
     except ValueError:
