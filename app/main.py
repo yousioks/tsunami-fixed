@@ -72,7 +72,7 @@ async def index(request: Request, session_data: tuple = Depends(get_or_create_se
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=False,     
+            httponly=False,  
             samesite="Lax",
             secure=False,
             max_age=settings.session_ttl
@@ -85,6 +85,7 @@ async def apply_bonus(bonus_data: BonusRequest, session: SessionData = Depends(g
         logger.warning(f"Bonus already applied for session {session.session_id}")
         raise HTTPException(status_code=400, detail="Bonus already applied")
     
+   
     try:
         bonus_value = float(bonus_data.bonus_amount)
         if not (1 <= bonus_value <= 999):
@@ -107,7 +108,7 @@ async def get_session_info(session_data: tuple = Depends(get_or_create_session))
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=False,      
+            httponly=False,  
             samesite="Lax",
             secure=False,
             max_age=settings.session_ttl
