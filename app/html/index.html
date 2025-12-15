@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WaveShop – Curated coastal gear and voyage-ready goods.">
+    <title>WaveShop</title>
+    <link rel="icon" href="/static/images/anchor.png" type="image/png">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>WaveShop</h1>
+            <div class="user-info">
+                <p>Balance: <span id="user-balance">0</span></p>
+                <p>Session: <span id="session-id">N/A</span></p>
+                <button id="cart-button" class="btn">Cargo <span class="badge" id="cart-count">0</span></button>
+                <button id="logout-button" class="btn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2>Your seaside supplies await</h2>
+            <p>Curated coastal gear and voyage-ready goods.</p>
+        </div>
+    </section>
+
+    <div id="bonus-popup" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Ahoy! Welcome Bonus</h2>
+            <p>Claim a starting purse for your voyage. Choose a bonus amount to outfit your journey:</p>
+            <form id="bonus-form">
+                <input type="number" id="bonus-amount" min="1" max="999" required placeholder="Enter a value (1-999)">
+                <button type="submit" class="btn">Claim Bonus</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="cart-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Your Cargo</h2>
+            <div id="cart-items">
+            </div>
+            <div id="cart-total">
+                <p>Total: <span id="total-amount">0</span></p>
+            </div>
+            <button id="checkout-button" class="btn" disabled>Set Sail</button>
+        </div>
+    </div>
+
+    <div id="checkout-success-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Voyage Provisioned!</h2>
+            <p>Thanks for your purchase. Your seafaring supplies will ship with the next tide!</p>
+            <button id="close-success-modal" class="btn">Close</button>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="product-grid" id="product-grid">
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <small>WaveShop • Smooth seas and fair winds</small>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
