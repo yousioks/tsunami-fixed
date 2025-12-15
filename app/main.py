@@ -20,15 +20,12 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="WaveShop", docs_url=None, redoc_url=None, openapi_url=None)
 
-
 templates = Jinja2Templates(directory="templates")
-
 
 redis_client = redis.Redis(host=settings.redis_host, port=settings.redis_port, decode_responses=True)
 
 def get_or_create_session(session_id: Optional[str] = Cookie(None)) -> tuple[SessionData, bool]:
     if not session_id or not redis_client.exists(f"session:{session_id}"):
-
         session_id = str(uuid.uuid4())
         session_data = SessionData(session_id=session_id, balance=0, bonus_received=False)
         redis_client.setex(
@@ -38,7 +35,6 @@ def get_or_create_session(session_id: Optional[str] = Cookie(None)) -> tuple[Ses
         )
         logger.info(f"Created new session: {session_id}")
         return session_data, True
-
 
     session_json = redis_client.get(f"session:{session_id}")
     session_dict = json.loads(session_json)
@@ -76,9 +72,9 @@ async def index(request: Request, session_data: tuple = Depends(get_or_create_se
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=True,
-            samesite="Lax",
-            secure=True,
+            httponly=True,        
+            samesite="Lax",       
+            secure=False,         
             max_age=settings.session_ttl
         )
     return response
@@ -104,9 +100,9 @@ async def get_session_info(session_data: tuple = Depends(get_or_create_session))
         response.set_cookie(
             key="session_id",
             value=session.session_id,
-            httponly=True,
-            samesite="Lax",
-            secure=True, 
+            httponly=True,        
+            samesite="Lax",       
+            secure=False,         
             max_age=settings.session_ttl
         )
     return response
@@ -148,7 +144,13 @@ async def logout(response: Response, session_id: Optional[str] = Cookie(None)):
     if session_id and redis_client.exists(f"session:{session_id}"):
         redis_client.delete(f"session:{session_id}")
         logger.info(f"Session {session_id} deleted")
-    response.delete_cookie("session_id")
+    # Удаляем cookie с теми же параметрами, что и при создании
+    response.delete_cookie(
+        key="session_id",
+        httponly=True,
+        samesite="Lax",
+        secure=False
+    )
     return JSONResponse(content={"success": True})
 
 @app.get("/api/products")
